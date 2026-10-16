@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bil Clock Alarm - Проснись и решай!</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .brand {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .clock-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-display {
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .date-display {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        input[type="time"], input[type="text"], select, input[type="file"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .audio-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .audio-tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .audio-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .audio-panel {
+            display: none;
+        }
+
+        .audio-panel.active {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-test {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            margin-top: 8px;
+        }
+
+        .btn-test:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .alarm-time {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .alarm-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+
+        /* Fullscreen Task Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #0f172a;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .task-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .task-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .task-progress {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .task-instruction {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* Mini games UI */
+        .math-expr {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .memory-btn {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .memory-btn.active {
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .clicker-box {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        .clicker-target {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent);
+            transition: all 0.1s ease;
+        }
+
+        .fitness-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .fitness-counter {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        .fitness-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="brand">Bil Clock Alarm</div>
+        </header>
+
+        <div class="clock-card">
+            <div class="time-display" id="clock">00:00:00</div>
+            <div class="date-display" id="date">Загрузка даты...</div>
+        </div>
+
+        <div class="card">
+            <h2>⏰ Настроить будильник</h2>
+            
+            <div class="form-group">
+                <label>Время срабатывания:</label>
+                <input type="time" id="alarmTime" required>
+            </div>
+
+            <div class="form-group">
+                <label>Звук будильника:</label>
+                <div class="audio-options">
+                    <button class="audio-tab-btn active" onclick="setAudioTab('synth')">Синтезатор</button>
+                    <button class="audio-tab-btn" onclick="setAudioTab('file')">Файл MP3</button>
+                    <button class="audio-tab-btn" onclick="setAudioTab('url')">Ссылка (URL)</button>
+                </div>
+
+                <div id="synthPanel" class="audio-panel active">
+                    <select id="synthSound">
+                        <option value="siren">Кибер-Сирена</option>
+                        <option value="beep">Пик-Пик (Классика)</option>
+                        <option value="arcade">Аркадная Тревога</option>
+                        <option value="pulse">Высокочастотный Пульс</option>
+                    </select>
+                </div>
+
+                <div id="filePanel" class="audio-panel">
+                    <input type="file" id="audioFile" accept="audio/*">
+                </div>
+
+                <div id="urlPanel" class="audio-panel">
+                    <input type="text" id="audioUrl" placeholder="https://example.com/sound.mp3">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="button" class="btn btn-test" style="margin-bottom: 10px;" onclick="testCurrentAudio()">🔊 Прослушать звук</button>
+            </div>
+
+            <div class="form-group">
+                <label>Задание для отключения:</label>
+                <select id="taskType">
+                    <option value="math">🧮 Математика (10 сложных задач)</option>
+                    <option value="memory">🧠 Память (5 уровней)</option>
+                    <option value="captcha">⌨️ Капча (2 фразы)</option>
+                    <option value="clicker">🎯 Кликер (15 мишеней)</option>
+                    <option value="fitness">🏋️ Физические упражнения</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="addAlarm()">Установить будильник</button>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Тестирование заданий</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-test" onclick="startTest('math')">🧮 Математика</button>
+                <button class="btn btn-test" onclick="startTest('memory')">🧠 Память</button>
+                <button class="btn btn-test" onclick="startTest('captcha')">⌨️ Капча</button>
+                <button class="btn btn-test" onclick="startTest('clicker')">🎯 Кликер</button>
+                <button class="btn btn-test" onclick="startTest('fitness')" style="grid-column: span 2;">🏋️ Физика</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Активные будильники</h2>
+            <div id="alarmList">
+                <div style="color: var(--text-muted); text-align: center;">Нет активных будильников</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Task Modal -->
+    <div class="overlay" id="taskOverlay">
+        <div class="task-card">
+            <div class="task-title" id="taskTitle">Задание</div>
+            <div class="task-progress" id="taskProgress">Прогресс</div>
+            <div class="task-instruction" id="taskInstruction">Инструкция</div>
+
+            <div id="taskContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let alarms = [];
+        let activeTab = 'synth';
+        let audioContext = null;
+        let audioInterval = null;
+        let customAudio = new Audio();
+        let currentTaskType = '';
+        let taskState = {};
+
+        // --- Clock Functionality ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU');
+            const dateStr = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            document.getElementById('clock').textContent = timeStr;
+            document.getElementById('date').textContent = dateStr;
+
+            // Check Alarms
+            const currentHHMM = now.toTimeString().substring(0, 5);
+            const currentSec = now.getSeconds();
+
+            if (currentSec === 0) {
+                alarms.forEach(alarm => {
+                    if (alarm.time === currentHHMM && alarm.active) {
+                        triggerAlarm(alarm);
+                    }
+                });
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- Audio Tab Switcher ---
+        function setAudioTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.audio-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.audio-panel').forEach(panel => panel.classList.remove('active'));
+
+            if(tab === 'synth') {
+                document.querySelectorAll('.audio-tab-btn')[0].classList.add('active');
+                document.getElementById('synthPanel').classList.add('active');
+            } else if(tab === 'file') {
+                document.querySelectorAll('.audio-tab-btn')[1].classList.add('active');
+                document.getElementById('filePanel').classList.add('active');
+            } else {
+                document.querySelectorAll('.audio-tab-btn')[2].classList.add('active');
+                document.getElementById('urlPanel').classList.add('active');
+            }
+        }
+
+        // --- Audio Player Synth & Custom ---
+        function playSynthSound(type) {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            if (type === 'siren') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(400, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.3);
+            } else if (type === 'beep') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioContext.currentTime);
+            } else if (type === 'arcade') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, audioContext.currentTime);
+                osc.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+            } else {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1000, audioContext.currentTime);
+            }
+
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.3);
+        }
+
+        function startAlarmAudio(type, source) {
+            stopAlarmAudio();
+            if (type === 'synth') {
+                audioInterval = setInterval(() => playSynthSound(source), 500);
+            } else if (type === 'file' || type === 'url') {
+                customAudio.src = source;
+                customAudio.loop = true;
+                customAudio.play().catch(e => console.log('Audio error:', e));
+            }
+        }
+
+        function stopAlarmAudio() {
+            if (audioInterval) clearInterval(audioInterval);
+            customAudio.pause();
+            customAudio.currentTime = 0;
+        }
+
+        function testCurrentAudio() {
+            let type = activeTab;
+            let src = '';
+            if (type === 'synth') src = document.getElementById('synthSound').value;
+            else if (type === 'file') {
+                const file = document.getElementById('audioFile').files[0];
+                if (file) src = URL.createObjectURL(file);
+                else return alert('Выберите файл MP3!');
+            } else {
+                src = document.getElementById('audioUrl').value;
+                if (!src) return alert('Введите URL ссылку на аудио!');
+            }
+
+            startAlarmAudio(type, src);
+            setTimeout(stopAlarmAudio, 3000);
+        }
+
+        // --- Alarms List Management ---
+        function addAlarm() {
+            const time = document.getElementById('alarmTime').value;
+            if (!time) return alert('Выберите время!');
+
+            const task = document.getElementById('taskType').value;
+            let audioSrc = '';
+            
+            if (activeTab === 'synth') audioSrc = document.getElementById('synthSound').value;
+            else if (activeTab === 'file') {
+                const file = document.getElementById('audioFile').files[0];
+                if (file) audioSrc = URL.createObjectURL(file);
+                else return alert('Загрузите аудиофайл!');
+            } else {
+                audioSrc = document.getElementById('audioUrl').value;
+                if (!audioSrc) return alert('Укажите ссылку на файл!');
+            }
+
+            alarms.push({
+                id: Date.now(),
+                time: time,
+                audioType: activeTab,
+                audioSrc: audioSrc,
+                task: task,
+                active: true
+            });
+
+            renderAlarms();
+        }
+
+        function renderAlarms() {
+            const container = document.getElementById('alarmList');
+            if (alarms.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); text-align: center;">Нет активных будильников</div>';
+                return;
+            }
+
+            container.innerHTML = alarms.map(a => `
+                <div class="alarm-item">
+                    <div>
+                        <div class="alarm-time">${a.time}</div>
+                        <div class="alarm-info">Задание: ${getTaskName(a.task)}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteAlarm(${a.id})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteAlarm(id) {
+            alarms = alarms.filter(a => a.id !== id);
+            renderAlarms();
+        }
+
+        function getTaskName(type) {
+            const names = {
+                math: '🧮 Математика (10 задач)',
+                memory: '🧠 Память (5 уровней)',
+                captcha: '⌨️ Капча (2 фразы)',
+                clicker: '🎯 Кликер (15 мишеней)',
+                fitness: '🏋️ Физические упражнения'
+            };
+            return names[type] || type;
+        }
+
+        // --- Trigger Alarm & Tasks ---
+        function triggerAlarm(alarm) {
+            startAlarmAudio(alarm.audioType, alarm.audioSrc);
+            launchTask(alarm.task);
+        }
+
+        function startTest(taskType) {
+            startAlarmAudio('synth', 'beep');
+            launchTask(taskType);
+        }
+
+        function launchTask(type) {
+            currentTaskType = type;
+            document.getElementById('taskOverlay').classList.add('active');
+            
+            if (type === 'math') initMathTask();
+            else if (type === 'memory') initMemoryTask();
+            else if (type === 'captcha') initCaptchaTask();
+            else if (type === 'clicker') initClickerTask();
+            else if (type === 'fitness') initFitnessTask();
+        }
+
+        function finishTask() {
+            stopAlarmAudio();
+            document.getElementById('taskOverlay').classList.remove('active');
+            alert('🎉 Отлично! Будильник успешно отключен!');
+        }
+
+        // --- Game 1: Hard Math (10 Questions) ---
+        function initMathTask() {
+            taskState = { current: 1, total: 10, answer: 0 };
+            document.getElementById('taskTitle').textContent = '🧮 Решите 10 сложных примеров';
+            nextMathQuestion();
+        }
+
+        function nextMathQuestion() {
+            document.getElementById('taskProgress').textContent = `Задача ${taskState.current} из ${taskState.total}`;
+            
+            const n1 = Math.floor(Math.random() * 20) + 10;
+            const n2 = Math.floor(Math.random() * 9) + 2;
+            const n3 = Math.floor(Math.random() * 50) + 10;
+            
+            taskState.answer = (n1 * n2) + n3;
+
+            document.getElementById('taskInstruction').textContent = 'Введите верный ответ для продолжения:';
+            document.getElementById('taskContent').innerHTML = `
+                <div class="math-expr">(${n1} × ${n2}) + ${n3} = ?</div>
+                <input type="number" id="mathInput" style="text-align: center; font-size: 1.5rem; margin-bottom: 15px;" autofocus>
+                <button class="btn" onclick="checkMathAnswer()">Ответить</button>
+            `;
+        }
+
+        function checkMathAnswer() {
+            const val = parseInt(document.getElementById('mathInput').value);
+            if (val === taskState.answer) {
+                if (taskState.current >= taskState.total) finishTask();
+                else {
+                    taskState.current++;
+                    nextMathQuestion();
+                }
+            } else {
+                alert('Неверный ответ! Попробуйте еще раз.');
+            }
+        }
+
+        // --- Game 2: Memory Matrix (5 Levels) ---
+        function initMemoryTask() {
+            taskState = { level: 1, maxLevel: 5, sequence: [], userSeq: [] };
+            document.getElementById('taskTitle').textContent = '🧠 Память';
+            nextMemoryLevel();
+        }
+
+        function nextMemoryLevel() {
+            document.getElementById('taskProgress').textContent = `Уровень ${taskState.level} из ${taskState.maxLevel}`;
+            document.getElementById('taskInstruction').textContent = 'Запомните подсвеченную последовательность:';
+            
+            taskState.sequence = [];
+            taskState.userSeq = [];
+            for(let i = 0; i < taskState.level + 2; i++) {
+                taskState.sequence.push(Math.floor(Math.random() * 9));
+            }
+
+            let html = '<div class="memory-grid">';
+            for(let i = 0; i < 9; i++) {
+                html += `<button class="memory-btn" id="memBtn_${i}" onclick="handleMemoryClick(${i})"></button>`;
+            }
+            html += '</div>';
+            document.getElementById('taskContent').innerHTML = html;
+
+            playMemorySequence();
+        }
+
+        function playMemorySequence() {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i > 0) document.getElementById(`memBtn_${taskState.sequence[i-1]}`).classList.remove('active');
+                if (i < taskState.sequence.length) {
+                    document.getElementById(`memBtn_${taskState.sequence[i]}`).classList.add('active');
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    document.getElementById('taskInstruction').textContent = 'Повторите комбинацию!';
+                }
+            }, 600);
+        }
+
+        function handleMemoryClick(idx) {
+            taskState.userSeq.push(idx);
+            const currentIdx = taskState.userSeq.length - 1;
+            
+            if (taskState.userSeq[currentIdx] !== taskState.sequence[currentIdx]) {
+                alert('Ошибка в последовательности! Пройдите уровень заново.');
+                nextMemoryLevel();
+                return;
+            }
+
+            if (taskState.userSeq.length === taskState.sequence.length) {
+                if (taskState.level >= taskState.maxLevel) finishTask();
+                else {
+                    taskState.level++;
+                    nextMemoryLevel();
+                }
+            }
+        }
+
+        // --- Game 3: Captcha (2 Phrases) ---
+        const captchaPhrases = [
+            "Каждый день — это новая возможность стать лучше!",
+            "Ранний подъем гарантирует продуктивный день!"
+        ];
+
+        function initCaptchaTask() {
+            taskState = { index: 0 };
+            document.getElementById('taskTitle').textContent = '⌨️ Ввод текста';
+            nextCaptcha();
+        }
+
+        function nextCaptcha() {
+            document.getElementById('taskProgress').textContent = `Фраза ${taskState.index + 1} из 2`;
+            document.getElementById('taskInstruction').textContent = 'Введите текст в точности как на экране:';
+            
+            const phrase = captchaPhrases[taskState.index];
+            document.getElementById('taskContent').innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 15px; color: var(--primary);">${phrase}</div>
+                <input type="text" id="captchaInput" placeholder="Введите текст сюда..." style="margin-bottom: 15px;">
+                <button class="btn" onclick="checkCaptcha()">Подтвердить</button>
+            `;
+        }
+
+        function checkCaptcha() {
+            const input = document.getElementById('captchaInput').value.trim();
+            if (input === captchaPhrases[taskState.index]) {
+                if (taskState.index >= 1) finishTask();
+                else {
+                    taskState.index++;
+                    nextCaptcha();
+                }
+            } else {
+                alert('Текст не совпадает! Проверьте символы.');
+            }
+        }
+
+        // --- Game 4: Clicker (15 Targets) ---
+        function initClickerTask() {
+            taskState = { count: 0, target: 15 };
+            document.getElementById('taskTitle').textContent = '🎯 Скоростной Кликер';
+            document.getElementById('taskInstruction').textContent = 'Быстро нажмите на 15 мишеней!';
+            
+            document.getElementById('taskContent').innerHTML = `
+                <div class="clicker-box" id="clickerArea">
+                    <div class="clicker-target" id="target" onclick="hitTarget()"></div>
+                </div>
+            `;
+            moveTarget();
+            updateClickerProgress();
+        }
+
+        function updateClickerProgress() {
+            document.getElementById('taskProgress').textContent = `Осталось поразить: ${taskState.target - taskState.count}`;
+        }
+
+        function moveTarget() {
+            const area = document.getElementById('clickerArea');
+            const target = document.getElementById('target');
+            const maxX = area.clientWidth - 50;
+            const maxY = area.clientHeight - 50;
+
+            target.style.left = Math.random() * maxX + 'px';
+            target.style.top = Math.random() * maxY + 'px';
+        }
+
+        function hitTarget() {
+            taskState.count++;
+            updateClickerProgress();
+            if (taskState.count >= taskState.target) finishTask();
+            else moveTarget();
+        }
+
+        // --- Game 5: Fitness Counter ---
+        function initFitnessTask() {
+            taskState = { count: 0, target: 15 };
+            document.getElementById('taskTitle').textContent = '🏋️ Физические упражнения';
+            document.getElementById('taskProgress').textContent = 'Приседания / Прыжки';
+            document.getElementById('taskInstruction').textContent = 'Выполните 15 повторений (нажимайте на кнопку ритмично или используйте датчик смартфона):';
+
+            document.getElementById('taskContent').innerHTML = `
+                <div class="fitness-box">
+                    <div class="fitness-counter" id="fitCount">0 / 15</div>
+                    <button class="fitness-btn" onclick="registerRep()">СДЕЛАТЬ!</button>
+                </div>
+            `;
+        }
+
+        function registerRep() {
+            taskState.count++;
+            document.getElementById('fitCount').textContent = `${taskState.count} / ${taskState.target}`;
+            if (taskState.count >= taskState.target) finishTask();
+        }
+    </script>
+</body>
+</html>
